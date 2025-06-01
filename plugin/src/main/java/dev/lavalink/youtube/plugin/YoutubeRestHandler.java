@@ -11,6 +11,7 @@ import dev.lavalink.youtube.clients.WebEmbedded;
 import dev.lavalink.youtube.clients.skeleton.Client;
 import dev.lavalink.youtube.plugin.rest.MinimalConfigRequest;
 import dev.lavalink.youtube.plugin.rest.MinimalConfigResponse;
+import dev.lavalink.youtube.plugin.rest.RestException;
 import dev.lavalink.youtube.track.YoutubePersistentHttpStream;
 import dev.lavalink.youtube.track.format.StreamFormat;
 import dev.lavalink.youtube.track.format.TrackFormats;
@@ -21,7 +22,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import java.io.IOException;
@@ -43,7 +43,7 @@ public class YoutubeRestHandler {
         YoutubeAudioSourceManager source = playerManager.source(YoutubeAudioSourceManager.class);
 
         if (source == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The YouTube source manager is not registered.");
+            throw new RestException(HttpStatus.BAD_REQUEST, "The YouTube source manager is not registered.");
         }
 
         return source;
@@ -57,7 +57,7 @@ public class YoutubeRestHandler {
         Throwable lastException = null;
 
         if (Arrays.stream(source.getClients()).noneMatch(Client::supportsFormatLoading)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "None of the registered clients supports format loading.");
+            throw new RestException(HttpStatus.BAD_REQUEST, "None of the registered clients supports format loading.");
         }
 
         boolean foundFormats = false;
@@ -84,7 +84,7 @@ public class YoutubeRestHandler {
             try {
                 formats = client.loadFormats(source, httpInterface, videoId);
             } catch (CannotBeLoaded cbl) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "This video cannot be loaded. Reason: " + cbl.getCause().getMessage());
+                throw new RestException(HttpStatus.BAD_REQUEST, "This video cannot be loaded. Reason: " + cbl.getCause().getMessage());
             }  catch (Throwable t) {
                 log.debug("Client \"{}\" threw a non-fatal exception, storing and proceeding...", client.getIdentifier());
                 t.addSuppressed(ClientInformation.create(client));
@@ -165,14 +165,14 @@ public class YoutubeRestHandler {
         IOUtils.closeQuietly(httpInterface);
 
         if (foundFormats) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No formats found with the requested itag.");
+            throw new RestException(HttpStatus.BAD_REQUEST, "No formats found with the requested itag.");
         }
 
         if (lastException != null) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "This video cannot be loaded", lastException);
+            throw new RestException(HttpStatus.INTERNAL_SERVER_ERROR, "This video cannot be loaded", lastException);
         }
 
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Could not find formats for the requested videoId.");
+        throw new RestException(HttpStatus.BAD_REQUEST, "Could not find formats for the requested videoId.");
     }
 
     @GetMapping("/youtube")

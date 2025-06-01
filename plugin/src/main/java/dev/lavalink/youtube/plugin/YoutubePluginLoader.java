@@ -10,8 +10,6 @@ import dev.arbjerg.lavalink.api.AudioPlayerManagerConfiguration;
 import dev.lavalink.youtube.YoutubeAudioSourceManager;
 import dev.lavalink.youtube.YoutubeSource;
 import dev.lavalink.youtube.clients.ClientOptions;
-import dev.lavalink.youtube.clients.Web;
-import dev.lavalink.youtube.clients.WebEmbedded;
 import dev.lavalink.youtube.clients.skeleton.Client;
 import lavalink.server.config.RateLimitConfig;
 import lavalink.server.config.ServerConfig;
@@ -21,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.lang.reflect.InvocationTargetException;
 import java.net.InetAddress;
+import java.net.URI;
 import java.net.UnknownHostException;
 import java.util.*;
 import java.util.function.Predicate;
@@ -206,8 +205,15 @@ public class YoutubePluginLoader implements AudioPlayerManagerConfiguration {
             source.setPlaylistPageCount(playlistLoadLimit);
         }
 
+        if (youtubeConfig != null) {
+            String proxyUriString = Objects.requireNonNull(youtubeConfig).getProxyURI();
+            source.getProxyHandler().init(URI.create(proxyUriString));
+        }
+
+
         if (youtubeConfig != null && youtubeConfig.getOauth() != null) {
             YoutubeOauthConfig oauthConfig = youtubeConfig.getOauth();
+
 
             if (oauthConfig.getEnabled()) {
                 log.debug("Configuring youtube oauth integration with token: \"{}\" skipInitialization: {}", oauthConfig.getRefreshToken(), oauthConfig.getSkipInitialization());
@@ -216,6 +222,7 @@ public class YoutubePluginLoader implements AudioPlayerManagerConfiguration {
         }
 
         audioPlayerManager.registerSourceManager(source);
+
         return audioPlayerManager;
     }
 }

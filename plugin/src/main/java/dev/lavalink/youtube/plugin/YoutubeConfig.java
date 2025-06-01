@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 @ConfigurationProperties(prefix = "plugins.youtube")
 @Component
@@ -18,6 +19,7 @@ public class YoutubeConfig {
     private String[] clients;
     private Map<String, ClientOptions> clientOptions = new HashMap<>();
     private YoutubeOauthConfig oauth = null;
+    private String proxyURI;
 
     public boolean getEnabled() {
         return enabled;
@@ -81,5 +83,13 @@ public class YoutubeConfig {
 
     public void setOauth(YoutubeOauthConfig oauth) {
         this.oauth = oauth;
+    }
+
+    public String getProxyURI() {
+        return Objects.requireNonNullElse(proxyURI, "");
+    }
+
+    public void setProxyURI(String proxyURI) {
+        this.proxyURI = proxyURI;
     }
 }

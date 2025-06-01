@@ -19,6 +19,7 @@ import dev.lavalink.youtube.clients.skeleton.Client;
 import dev.lavalink.youtube.http.YoutubeAccessTokenTracker;
 import dev.lavalink.youtube.http.YoutubeHttpContextFilter;
 import dev.lavalink.youtube.http.YoutubeOauth2Handler;
+import dev.lavalink.youtube.http.YoutubeProxyHandler;
 import dev.lavalink.youtube.track.YoutubeAudioTrack;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -69,6 +70,7 @@ public class YoutubeAudioSourceManager implements AudioSourceManager {
     protected YoutubeHttpContextFilter contextFilter;
     protected YoutubeOauth2Handler oauth2Handler;
     protected SignatureCipherManager cipherManager;
+    protected YoutubeProxyHandler proxyHandler;
 
     public YoutubeAudioSourceManager() {
         this(true);
@@ -133,6 +135,8 @@ public class YoutubeAudioSourceManager implements AudioSourceManager {
     public YoutubeAudioSourceManager(YoutubeSourceOptions options,
                                      @NotNull Client... clients) {
         this.httpInterfaceManager = HttpClientTools.createCookielessThreadLocalManager();
+        this.proxyHandler = new YoutubeProxyHandler(httpInterfaceManager);
+
         this.allowSearch = options.isAllowSearch();
         this.allowDirectVideoIds = options.isAllowDirectVideoIds();
         this.allowDirectPlaylistIds = options.isAllowDirectPlaylistIds();
@@ -365,6 +369,11 @@ public class YoutubeAudioSourceManager implements AudioSourceManager {
     @NotNull
     public SignatureCipherManager getCipherManager() {
         return cipherManager;
+    }
+
+    @NotNull
+    public YoutubeProxyHandler getProxyHandler() {
+        return proxyHandler;
     }
 
     /**
