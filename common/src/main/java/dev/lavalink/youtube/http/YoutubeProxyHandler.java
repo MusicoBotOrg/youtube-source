@@ -41,7 +41,7 @@ public class YoutubeProxyHandler {
         }
 
         httpClientBuilder.addInterceptorFirst((HttpRequestInterceptor) (httpRequest, httpContext) -> {
-            log.info("Proxy client intercepted request: {}", httpRequest.getRequestLine());
+            log.debug("Proxy client intercepted request: {}", httpRequest.getRequestLine());
         });
 
         httpClientBuilder.setProxy(proxy).setDefaultCredentialsProvider(credsProvider);
